@@ -16,7 +16,7 @@
 		<filter-class>com.itrustcambodia.pluggable.core.Framework</filter-class>
 		<init-param>
 			<param-name>applicationClassName</param-name>
-			<param-value>com.itrustcambodia.v5.WebApplication</param-value>
+			<param-value>com.itrustcambodia.push.WebApplication</param-value>
 		</init-param>
 	</filter>
 	<filter-mapping>

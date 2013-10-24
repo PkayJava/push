@@ -14,12 +14,12 @@
 
 	<modelVersion>4.0.0</modelVersion>
 
-	<groupId>com.itrustcambodia.v5</groupId>
-	<artifactId>v5</artifactId>
-	<version>1.0-SNAPSHOT</version>
+	<groupId>com.itrustcambodia.push</groupId>
+	<artifactId>push</artifactId>
+	<version>0.0.1.0</version>
 	<packaging>war</packaging>
 
-	<name>v5</name>
+	<name>push</name>
 
 	<description>Push Service</description>
 
@@ -41,6 +41,9 @@
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<ienv.name>${user.name}</ienv.name>
 
+		<tomcat7.maven.plugin.version>2.1</tomcat7.maven.plugin.version>
+		<cf.maven.plugin.version>1.0.0</cf.maven.plugin.version>
+		<maven.war.plugin.version>2.4</maven.war.plugin.version>
 		<maven.clean.plugin.version>2.5</maven.clean.plugin.version>
 		<maven.install.plugin.version>2.5</maven.install.plugin.version>
 		<maven.release.plugin.version>2.4</maven.release.plugin.version>
@@ -99,6 +102,9 @@
 			<properties>
 				<ienv.name>appfog</ienv.name>
 			</properties>
+			<build>
+				<finalName>v5</finalName>
+			</build>
 		</profile>
 	</profiles>
 
@@ -113,13 +119,13 @@
 		<dependency>
 			<groupId>com.itrustcambodia.pluggable</groupId>
 			<artifactId>pluggable</artifactId>
-			<version>0.6.1.1-SNAPSHOT</version>
+			<version>0.6.2.0</version>
 		</dependency>
 
 		<dependency>
 			<groupId>com.itrustcambodia.plugin.query</groupId>
 			<artifactId>query</artifactId>
-			<version>0.6.0.1-SNAPSHOT</version>
+			<version>0.6.2.0</version>
 		</dependency>
 
 		<dependency>
@@ -363,26 +369,80 @@
 		</testResources>
 
 		<plugins>
+
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-deploy-plugin</artifactId>
+				<version>${maven.deploy.plugin.version}</version>
+				<configuration>
+					<skip>true</skip>
+				</configuration>
+			</plugin>
+
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-javadoc-plugin</artifactId>
+				<version>${maven.javadoc.plugin.version}</version>
+				<executions>
+					<execution>
+						<id>attach-javadocs</id>
+						<goals>
+							<goal>jar</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-release-plugin</artifactId>
+				<version>${maven.release.plugin.version}</version>
+			</plugin>
+
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-clean-plugin</artifactId>
+				<version>${maven.clean.plugin.version}</version>
+			</plugin>
+
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-install-plugin</artifactId>
+				<version>${maven.install.plugin.version}</version>
+			</plugin>
+
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-source-plugin</artifactId>
+				<version>${maven.source.plugin.version}</version>
+				<executions>
+					<execution>
+						<id>attach-sources</id>
+						<goals>
+							<goal>jar-no-fork</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-compiler-plugin</artifactId>
-				<version>2.3.2</version>
+				<version>${maven.compiler.plugin.version}</version>
 				<configuration>
 					<encoding>${project.build.sourceEncoding}</encoding>
 					<source>${java.version}</source>
 					<target>${java.version}</target>
 				</configuration>
 			</plugin>
-
 			<plugin>
 				<groupId>org.apache.tomcat.maven</groupId>
 				<artifactId>tomcat7-maven-plugin</artifactId>
-				<version>2.1</version>
+				<version>${tomcat7.maven.plugin.version}</version>
 				<configuration>
 					<uriEncoding>UTF-8</uriEncoding>
 					<contextFile>src/env/${ienv.name}/webapp/META-INF/context.xml</contextFile>
 					<path>/${project.build.finalName}</path>
-					<!-- <path>/</path> -->
 				</configuration>
 				<dependencies>
 					<dependency>
@@ -397,7 +457,7 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-eclipse-plugin</artifactId>
-				<version>2.9</version>
+				<version>${maven.eclipse.plugin.version}</version>
 				<configuration>
 					<downloadSources>true</downloadSources>
 					<additionalConfig>
@@ -414,7 +474,7 @@
 			<plugin>
 				<groupId>org.cloudfoundry</groupId>
 				<artifactId>cf-maven-plugin</artifactId>
-				<version>1.0.0.M4</version>
+				<version>${cf.maven.plugin.version}</version>
 				<configuration>
 					<server>v5-appfog</server>
 					<target>https://api.appfog.com</target>
@@ -431,25 +491,8 @@
 
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-eclipse-plugin</artifactId>
-				<version>2.9</version>
-				<configuration>
-					<downloadSources>true</downloadSources>
-					<additionalConfig>
-						<file>
-							<name>.settings/org.eclipse.core.resources.prefs</name>
-							<content>
-                <![CDATA[eclipse.preferences.version=1${line.separator}encoding/<project>=${project.build.sourceEncoding}${line.separator}]]>
-							</content>
-						</file>
-					</additionalConfig>
-				</configuration>
-			</plugin>
-
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-war-plugin</artifactId>
-				<version>2.3</version>
+				<version>${maven.war.plugin.version}</version>
 				<configuration>
 					<webResources>
 						<resource>
