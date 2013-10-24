@@ -15,7 +15,7 @@
 
 	<groupId>com.itrustcambodia.push</groupId>
 	<artifactId>push</artifactId>
-	<version>0.0.1.0</version>
+	<version>0.0.1.1-SNAPSHOT</version>
 	<packaging>war</packaging>
 
 	<name>push</name>
@@ -58,7 +58,7 @@
 		<url>https://github.com/PkayJava/push</url>
 		<connection>scm:git:git://github.com/PkayJava/push.git</connection>
 		<developerConnection>scm:git:git@github.com:PkayJava/push.git</developerConnection>
-		<tag>push-0.0.1.0</tag>
+		<tag>HEAD</tag>
 	</scm>
 
 	<repositories>
