@@ -98,7 +98,7 @@ public class WebApplication extends AbstractWebApplication {
     protected DataSource initDataSource() {
         BoneCPDataSource dataSource = new BoneCPDataSource();
         dataSource.setDriverClass("com.mysql.jdbc.Driver");
-        dataSource.setJdbcUrl("jdbc:mysql://127.0.0.1/v5?createDatabaseIfNotExist=true");
+        dataSource.setJdbcUrl("jdbc:mysql://127.0.0.1/push?createDatabaseIfNotExist=true");
         dataSource.setUsername("root");
         dataSource.setPassword("");
         dataSource.setIdleConnectionTestPeriod(60, TimeUnit.SECONDS);

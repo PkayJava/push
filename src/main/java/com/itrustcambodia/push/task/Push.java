@@ -10,7 +10,6 @@ import java.util.Map.Entry;
 
 import javapns.communication.exceptions.CommunicationException;
 import javapns.communication.exceptions.KeystoreException;
-import javapns.json.JSONException;
 import javapns.notification.Payload;
 import javapns.notification.PushNotificationPayload;
 
@@ -225,28 +224,6 @@ public class Push extends Job {
                                     insert.execute(fields);
                                     jdbcTemplate.update("delete from " + TableUtilities.getTableName(QueueDevice.class) + " where " + QueueDevice.DEVICE_ID + " = ? and " + QueueDevice.QUEUE_ID + " = ?", device.getId(), queue.getId());
                                 }
-                            } catch (JSONException e) {
-                                for (Device device : entry.getValue()) {
-                                    Map<String, Object> fields = new HashMap<String, Object>();
-                                    fields.put(History.IP, device.getIp());
-                                    fields.put(History.MANUFACTURE, manufactures.get(device.getManufactureId()));
-                                    fields.put(History.MESSAGE, queue.getMessage());
-                                    fields.put(History.MODEL, models.get(device.getModelId()));
-                                    fields.put(History.PLATFORM, platforms.get(device.getPlatformId()));
-                                    fields.put(History.QUEUE_DATE, queue.getQueueDate());
-                                    fields.put(History.SENT_DATE, new Date());
-                                    fields.put(History.CITY, cities.get(device.getCityId()));
-                                    fields.put(History.COUNTRY, countries.get(device.getCountryId()));
-                                    fields.put(History.TOKEN, device.getToken());
-                                    fields.put(History.VERSION, versions.get(device.getVersionId()));
-                                    fields.put(History.USER_ID, queue.getUserId());
-                                    fields.put(History.APPLICATION, jdbcTemplate.queryForObject("select " + Application.NAME + " from " + TableUtilities.getTableName(Application.class) + " where " + Application.ID + " = ?", String.class, device.getApplicationId()));
-                                    fields.put(History.STATUS, History.Status.ERROR);
-                                    LOGGER.info("failed {}", device.getToken());
-                                    insert.execute(fields);
-                                    jdbcTemplate.update("delete from " + TableUtilities.getTableName(QueueDevice.class) + " where " + QueueDevice.DEVICE_ID + " = ? and " + QueueDevice.QUEUE_ID + " = ?", device.getId(), queue.getId());
-                                }
-                                LOGGER.info("message format problem {}", e.getMessage());
                             }
                         }
                     }

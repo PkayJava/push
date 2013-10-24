@@ -1,19 +1,13 @@
 package com.itrustcambodia.push.support;
 
 import java.util.Arrays;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import javapns.notification.Payload;
-import javapns.notification.PushNotificationPayload;
-
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
 
-import com.google.android.gcm.server.Message;
-import com.google.gson.Gson;
 import com.itrustcambodia.pluggable.core.AbstractWebApplication;
 import com.itrustcambodia.pluggable.core.Version;
 import com.itrustcambodia.pluggable.database.EntityRowMapper;
@@ -24,7 +18,6 @@ import com.itrustcambodia.pluggable.migration.AbstractApplicationMigrator;
 import com.itrustcambodia.pluggable.utilities.GroupUtilities;
 import com.itrustcambodia.pluggable.utilities.SecurityUtilities;
 import com.itrustcambodia.pluggable.utilities.TableUtilities;
-import com.itrustcambodia.push.PushUtils;
 import com.itrustcambodia.push.entity.Application;
 import com.itrustcambodia.push.entity.City;
 import com.itrustcambodia.push.entity.Country;
@@ -36,10 +29,9 @@ import com.itrustcambodia.push.entity.Model;
 import com.itrustcambodia.push.entity.Platform;
 import com.itrustcambodia.push.entity.Queue;
 import com.itrustcambodia.push.entity.QueueDevice;
-import com.itrustcambodia.push.entity.User;
 
 public class ApplicationMigration extends AbstractApplicationMigrator {
-
+	
     @Version(value = 0.03, description = "Install Group")
     public void patchVersion_0_03() {
         JdbcTemplate jdbcTemplate = getApplication().getBean(JdbcTemplate.class);
