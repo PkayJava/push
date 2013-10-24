@@ -22,7 +22,7 @@
 	<name>v5</name>
 
 	<description>Push Service</description>
-	
+
 	<licenses>
 		<license>
 			<name>The Apache Software License, Version 2.0</name>
@@ -40,7 +40,49 @@
 		<jodatime.version>2.2</jodatime.version>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<ienv.name>${user.name}</ienv.name>
+
+		<maven.clean.plugin.version>2.5</maven.clean.plugin.version>
+		<maven.install.plugin.version>2.5</maven.install.plugin.version>
+		<maven.release.plugin.version>2.4</maven.release.plugin.version>
+		<maven.compiler.plugin.version>3.1</maven.compiler.plugin.version>
+		<maven.eclipse.plugin.version>2.9</maven.eclipse.plugin.version>
+		<maven.deploy.plugin.version>2.7</maven.deploy.plugin.version>
+		<maven.gpg.plugin.version>1.4</maven.gpg.plugin.version>
+		<maven.javadoc.plugin.version>2.9.1</maven.javadoc.plugin.version>
+		<maven.source.plugin.version>2.2.1</maven.source.plugin.version>
 	</properties>
+
+	<scm>
+		<url>https://github.com/PkayJava/push</url>
+		<connection>scm:git:git://github.com/PkayJava/push.git</connection>
+		<developerConnection>scm:git:git@github.com:PkayJava/push.git</developerConnection>
+		<tag>HEAD</tag>
+	</scm>
+
+	<repositories>
+		<repository>
+			<id>sonatype-nexus-snapshots</id>
+			<name>Sonatype Nexus Snapshots</name>
+			<url>https://oss.sonatype.org/content/repositories/snapshots</url>
+			<releases>
+				<enabled>false</enabled>
+			</releases>
+			<snapshots>
+				<enabled>true</enabled>
+			</snapshots>
+		</repository>
+	</repositories>
+
+	<developers>
+		<developer>
+			<id>pkayjava</id>
+			<email>pkayjava@gmail.com</email>
+			<url>www.linkedin.com/in/socheatkhauv</url>
+			<organization>iTrust Cambodia</organization>
+			<organizationUrl>http://www.itrustcam.com</organizationUrl>
+			<timezone>7</timezone>
+		</developer>
+	</developers>
 
 	<profiles>
 		<profile>
