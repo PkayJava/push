@@ -20,7 +20,7 @@ import com.itrustcambodia.pluggable.widget.TextField;
 import com.itrustcambodia.push.MenuUtils;
 import com.itrustcambodia.push.entity.City;
 
-@Mount("/encity")
+@Mount("/ecity")
 @AuthorizeInstantiation(roles = { @Role(name = "ROLE_PAGE_EDIT_CITY", description = "Access Edit City Page") })
 public class EditCityPage extends KnownPage {
 

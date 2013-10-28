@@ -22,7 +22,7 @@ import com.itrustcambodia.pluggable.widget.TextField;
 import com.itrustcambodia.push.MenuUtils;
 import com.itrustcambodia.push.entity.Version;
 
-@Mount("/never")
+@Mount("/nver")
 @AuthorizeInstantiation(roles = { @Role(name = "ROLE_PAGE_NEW_VERSION", description = "Access New Version Page") })
 public class NewVersionPage extends KnownPage {
 
