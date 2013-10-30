@@ -2,11 +2,11 @@ package com.itrustcambodia.push.page.model;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.wicket.Component;
 import org.apache.wicket.extensions.markup.html.repeater.data.grid.ICellPopulator;
 import org.apache.wicket.extensions.markup.html.repeater.data.table.IColumn;
-import org.apache.wicket.extensions.markup.html.repeater.data.table.PropertyColumn;
 import org.apache.wicket.extensions.markup.html.repeater.data.table.filter.FilterForm;
 import org.apache.wicket.extensions.markup.html.repeater.data.table.filter.FilteredAbstractColumn;
 import org.apache.wicket.markup.html.basic.Label;
@@ -20,18 +20,20 @@ import com.itrustcambodia.pluggable.core.WebSession;
 import com.itrustcambodia.pluggable.layout.AbstractLayout;
 import com.itrustcambodia.pluggable.page.WebPage;
 import com.itrustcambodia.pluggable.utilities.FrameworkUtilities;
+import com.itrustcambodia.pluggable.utilities.TableUtilities;
 import com.itrustcambodia.pluggable.wicket.authroles.Role;
 import com.itrustcambodia.pluggable.wicket.authroles.authorization.strategies.role.Roles;
 import com.itrustcambodia.pluggable.wicket.authroles.authorization.strategies.role.annotations.AuthorizeInstantiation;
 import com.itrustcambodia.pluggable.wicket.extensions.markup.html.repeater.data.table.DataTable;
 import com.itrustcambodia.pluggable.wicket.extensions.markup.html.repeater.data.table.DefaultDataTable;
+import com.itrustcambodia.pluggable.wicket.extensions.markup.html.repeater.data.table.PropertyColumn;
 import com.itrustcambodia.pluggable.wicket.extensions.markup.html.repeater.data.table.filter.FilterToolbar;
 import com.itrustcambodia.pluggable.wicket.extensions.markup.html.repeater.data.table.filter.GoAndClearFilter;
 import com.itrustcambodia.pluggable.wicket.extensions.markup.html.repeater.data.table.filter.TextFilteredPropertyColumn;
+import com.itrustcambodia.pluggable.wicket.extensions.markup.html.repeater.util.MapSortableDataProvider;
 import com.itrustcambodia.push.MenuUtils;
 import com.itrustcambodia.push.action.ModelActionPanel;
 import com.itrustcambodia.push.entity.Model;
-import com.itrustcambodia.push.provider.ModelSortableDataProvider;
 
 @Mount("/models")
 @AuthorizeInstantiation(roles = { @Role(name = "ROLE_PAGE_MODEL_MANAGEMENT", description = "Access Model Management Page") })
@@ -42,9 +44,9 @@ public class ModelManagementPage extends WebPage {
      */
     private static final long serialVersionUID = -4201966046136244462L;
 
-    private ModelSortableDataProvider dataProvider;
+    private MapSortableDataProvider dataProvider;
 
-    private FilterForm<Model> filterForm;
+    private FilterForm<Map<String, Object>> filterForm;
 
     @Override
     public String getPageTitle() {
@@ -66,34 +68,34 @@ public class ModelManagementPage extends WebPage {
         layout.add(newPage);
         newPage.setVisible(FrameworkUtilities.hasAccess(roles, NewModelPage.class));
 
-        this.dataProvider = new ModelSortableDataProvider();
+        this.dataProvider = new MapSortableDataProvider(TableUtilities.getTableName(Model.class));
 
-        this.filterForm = new FilterForm<Model>("filter-form", this.dataProvider);
+        this.filterForm = new FilterForm<Map<String, Object>>("filter-form", this.dataProvider);
         layout.add(filterForm);
 
-        List<IColumn<Model, String>> columns = new ArrayList<IColumn<Model, String>>();
+        List<IColumn<Map<String, Object>, String>> columns = new ArrayList<IColumn<Map<String, Object>, String>>();
         if (FrameworkUtilities.hasAccess(roles, EditModelPage.class)) {
             columns.add(createActionsColumn());
-            columns.add(new PropertyColumn<Model, String>(org.apache.wicket.model.Model.<String> of("ID"), Model.ID, "id"));
+            columns.add(new PropertyColumn<Map<String, Object>, String>(org.apache.wicket.model.Model.<String> of("ID"), TableUtilities.getTableName(Model.class) + "." + Model.ID, TableUtilities.getTableName(Model.class) + "." + Model.ID));
         } else {
             columns.add(createFilterColumn());
         }
 
-        columns.add(createColumn("Name", Model.NAME, "name"));
+        columns.add(createColumn("Name", TableUtilities.getTableName(Model.class) + "." + Model.NAME, TableUtilities.getTableName(Model.class) + "." + Model.NAME));
 
-        DataTable<Model, String> dataTable = new DefaultDataTable<Model, String>("table", columns, dataProvider, 20);
+        DataTable<Map<String, Object>, String> dataTable = new DefaultDataTable<Map<String, Object>, String>("table", columns, dataProvider, 20);
         dataTable.addTopToolbar(new FilterToolbar(dataTable, filterForm, dataProvider));
 
         //
         filterForm.add(dataTable);
     }
 
-    private TextFilteredPropertyColumn<Model, Model, String> createColumn(String key, String sortProperty, String propertyExpression) {
-        return new TextFilteredPropertyColumn<Model, Model, String>(org.apache.wicket.model.Model.<String> of(key), sortProperty, propertyExpression);
+    private TextFilteredPropertyColumn<Map<String, Object>, Map<String, Object>, String> createColumn(String key, String sortProperty, String propertyExpression) {
+        return new TextFilteredPropertyColumn<Map<String, Object>, Map<String, Object>, String>(org.apache.wicket.model.Model.<String> of(key), sortProperty, propertyExpression);
     }
 
-    private FilteredAbstractColumn<Model, String> createFilterColumn() {
-        return new FilteredAbstractColumn<Model, String>(new org.apache.wicket.model.Model<String>("ID / Filter")) {
+    private FilteredAbstractColumn<Map<String, Object>, String> createFilterColumn() {
+        return new FilteredAbstractColumn<Map<String, Object>, String>(new org.apache.wicket.model.Model<String>("ID / Filter")) {
             private static final long serialVersionUID = 1L;
 
             // return the go-and-clear filter for the filter toolbar
@@ -102,14 +104,14 @@ public class ModelManagementPage extends WebPage {
             }
 
             // add the UserActionsPanel to the cell item
-            public void populateItem(Item<ICellPopulator<Model>> cellItem, String componentId, IModel<Model> rowModel) {
-                cellItem.add(new Label(componentId, rowModel.getObject().getId()));
+            public void populateItem(Item<ICellPopulator<Map<String, Object>>> cellItem, String componentId, IModel<Map<String, Object>> rowModel) {
+                cellItem.add(new Label(componentId, (Number) rowModel.getObject().get(TableUtilities.getTableName(Model.class) + "." + Model.ID)));
             }
         };
     }
 
-    private FilteredAbstractColumn<Model, String> createActionsColumn() {
-        return new FilteredAbstractColumn<Model, String>(new org.apache.wicket.model.Model<String>("Action / Filter")) {
+    private FilteredAbstractColumn<Map<String, Object>, String> createActionsColumn() {
+        return new FilteredAbstractColumn<Map<String, Object>, String>(new org.apache.wicket.model.Model<String>("Action / Filter")) {
             private static final long serialVersionUID = 1L;
 
             // return the go-and-clear filter for the filter toolbar
@@ -118,7 +120,7 @@ public class ModelManagementPage extends WebPage {
             }
 
             // add the UserActionsPanel to the cell item
-            public void populateItem(Item<ICellPopulator<Model>> cellItem, String componentId, IModel<Model> rowModel) {
+            public void populateItem(Item<ICellPopulator<Map<String, Object>>> cellItem, String componentId, IModel<Map<String, Object>> rowModel) {
                 cellItem.add(new ModelActionPanel(componentId, rowModel));
             }
         };

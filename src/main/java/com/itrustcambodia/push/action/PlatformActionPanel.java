@@ -1,60 +1,50 @@
 package com.itrustcambodia.push.action;
 
+import java.util.Map;
+
 import org.apache.wicket.AttributeModifier;
-import org.apache.wicket.markup.html.link.Link;
-import org.apache.wicket.markup.html.panel.Panel;
 import org.apache.wicket.model.IModel;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 import com.itrustcambodia.pluggable.core.AbstractWebApplication;
+import com.itrustcambodia.pluggable.database.EntityRowMapper;
+import com.itrustcambodia.pluggable.panel.KnownPanel;
 import com.itrustcambodia.pluggable.utilities.TableUtilities;
+import com.itrustcambodia.pluggable.validation.controller.Navigation;
+import com.itrustcambodia.pluggable.widget.Link;
 import com.itrustcambodia.push.entity.Platform;
 import com.itrustcambodia.push.page.platform.EditPlatformPage;
 import com.itrustcambodia.push.page.platform.PlatformManagementPage;
 
-public class PlatformActionPanel extends Panel {
-    private static final long serialVersionUID = 1L;
+public class PlatformActionPanel extends KnownPanel {
 
-    public PlatformActionPanel(String id, IModel<Platform> model) {
+    /**
+     * 
+     */
+    private static final long serialVersionUID = -587913682304507115L;
+
+    private Map<String, Object> model;
+
+    public PlatformActionPanel(String id, IModel<Map<String, Object>> model) {
         super(id);
-        addEditLink(model);
-        addDeleteLink(model);
-
+        this.model = model.getObject();
+        getLinkComponent("delete").add(AttributeModifier.replace("onclick", "return confirm('Are you sure ?');"));
     }
 
-    private void addDeleteLink(IModel<Platform> model) {
-        Link<Platform> delete = new Link<Platform>("deleteLink", model) {
-            private static final long serialVersionUID = 1L;
-
-            /**
-             * Go to the Delete page, passing this page and the id of the
-             * Contact involved.
-             */
-            @Override
-            public void onClick() {
-                JdbcTemplate jdbcTemplate = ((AbstractWebApplication) getApplication()).getJdbcTemplate();
-                Platform model = getModelObject();
-                jdbcTemplate.update("delete from " + TableUtilities.getTableName(Platform.class) + " where " + Platform.ID + " = ?", model.getId());
-                setResponsePage(PlatformManagementPage.class);
-            }
-        };
-        delete.add(AttributeModifier.replace("onclick", "return confirm('Are you sure ?');"));
-        add(delete);
+    @Link(label = "Delete", order = 1)
+    public Navigation delete() {
+        JdbcTemplate jdbcTemplate = ((AbstractWebApplication) getApplication()).getJdbcTemplate();
+        jdbcTemplate.update("delete from " + TableUtilities.getTableName(Platform.class) + " where " + Platform.ID + " = ?", model.get(TableUtilities.getTableName(Platform.class) + "." + Platform.ID));
+        return new Navigation(PlatformManagementPage.class);
     }
 
-    private void addEditLink(IModel<Platform> model) {
-        add(new Link<Platform>("editLink", model) {
-            private static final long serialVersionUID = 1L;
-
-            /**
-             * Go to the Edit page, passing this page and the id of the Contact
-             * involved.
-             */
-            @Override
-            public void onClick() {
-                setResponsePage(new EditPlatformPage(getModelObject()));
-            }
-        });
+    @Link(label = "Edit", order = 2)
+    public Navigation edit() {
+        AbstractWebApplication application = (AbstractWebApplication) getApplication();
+        JdbcTemplate jdbcTemplate = application.getJdbcTemplate();
+        Long platformId = ((Number) model.get(TableUtilities.getTableName(Platform.class) + "." + Platform.ID)).longValue();
+        Platform platform = jdbcTemplate.queryForObject("select * from " + TableUtilities.getTableName(Platform.class) + " where " + Platform.ID + " = ?", new EntityRowMapper<Platform>(Platform.class), platformId);
+        return new Navigation(new EditPlatformPage(platform));
     }
 
 }

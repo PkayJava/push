@@ -2,11 +2,11 @@ package com.itrustcambodia.push.page;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.wicket.Component;
 import org.apache.wicket.extensions.markup.html.repeater.data.grid.ICellPopulator;
 import org.apache.wicket.extensions.markup.html.repeater.data.table.IColumn;
-import org.apache.wicket.extensions.markup.html.repeater.data.table.PropertyColumn;
 import org.apache.wicket.extensions.markup.html.repeater.data.table.filter.FilterForm;
 import org.apache.wicket.extensions.markup.html.repeater.data.table.filter.FilteredAbstractColumn;
 import org.apache.wicket.markup.repeater.Item;
@@ -26,13 +26,14 @@ import com.itrustcambodia.pluggable.wicket.authroles.authorization.strategies.ro
 import com.itrustcambodia.pluggable.wicket.authroles.authorization.strategies.role.annotations.AuthorizeInstantiation;
 import com.itrustcambodia.pluggable.wicket.extensions.markup.html.repeater.data.table.DataTable;
 import com.itrustcambodia.pluggable.wicket.extensions.markup.html.repeater.data.table.DefaultDataTable;
+import com.itrustcambodia.pluggable.wicket.extensions.markup.html.repeater.data.table.PropertyColumn;
 import com.itrustcambodia.pluggable.wicket.extensions.markup.html.repeater.data.table.filter.FilterToolbar;
 import com.itrustcambodia.pluggable.wicket.extensions.markup.html.repeater.data.table.filter.GoAndClearFilter;
 import com.itrustcambodia.pluggable.wicket.extensions.markup.html.repeater.data.table.filter.TextFilteredPropertyColumn;
+import com.itrustcambodia.pluggable.wicket.extensions.markup.html.repeater.util.MapSortableDataProvider;
 import com.itrustcambodia.push.MenuUtils;
 import com.itrustcambodia.push.action.ApplicationActionPanel;
 import com.itrustcambodia.push.entity.Application;
-import com.itrustcambodia.push.provider.ApplicationSortableDataProvider;
 
 @AuthorizeInstantiation(roles = { @Role(name = "ROLE_PAGE_APPLICATION_MANAGEMENT", description = "Access Application Management Page") })
 @Mount("/apps")
@@ -43,9 +44,9 @@ public class ApplicationManagementPage extends WebPage {
      */
     private static final long serialVersionUID = -4201966046136244462L;
 
-    private ApplicationSortableDataProvider dataProvider;
+    private MapSortableDataProvider dataProvider;
 
-    private FilterForm<Application> filterForm;
+    private FilterForm<Map<String, Object>> filterForm;
 
     @Override
     public String getPageTitle() {
@@ -66,34 +67,33 @@ public class ApplicationManagementPage extends WebPage {
 
         Long userId = jdbcTemplate.queryForObject("select " + com.itrustcambodia.push.entity.User.ID + " from " + TableUtilities.getTableName(com.itrustcambodia.push.entity.User.class) + " where " + com.itrustcambodia.push.entity.User.LOGIN + " = ?", Long.class, session.getUsername());
 
-        Application filter = new Application();
-        filter.setUserId(userId);
-        this.dataProvider = new ApplicationSortableDataProvider(filter);
+        this.dataProvider = new MapSortableDataProvider(TableUtilities.getTableName(Application.class));
+        this.dataProvider.addWhere(TableUtilities.getTableName(Application.class) + "." + Application.USER_ID, userId);
 
-        this.filterForm = new FilterForm<Application>("filter-form", this.dataProvider);
+        this.filterForm = new FilterForm<Map<String, Object>>("filter-form", this.dataProvider);
         layout.add(filterForm);
 
-        List<IColumn<Application, String>> columns = new ArrayList<IColumn<Application, String>>();
+        List<IColumn<Map<String, Object>, String>> columns = new ArrayList<IColumn<Map<String, Object>, String>>();
         columns.add(createActionsColumn());
 
-        columns.add(new PropertyColumn<Application, String>(Model.<String> of("ID"), Application.ID, "id"));
-        columns.add(createColumn("Name", Application.NAME, "name"));
-        columns.add(createColumn("Android Package Id", Application.PACKAGE_ID, "packageId"));
-        columns.add(createColumn("Sender/Project Id ", Application.SENDER_ID, "senderId"));
+        columns.add(new PropertyColumn<Map<String, Object>, String>(Model.<String> of("ID"), TableUtilities.getTableName(Application.class) + "." + Application.ID, TableUtilities.getTableName(Application.class) + "." + Application.ID));
+        columns.add(createColumn("Name", TableUtilities.getTableName(Application.class) + "." + Application.NAME, TableUtilities.getTableName(Application.class) + "." + Application.NAME));
+        columns.add(createColumn("Android Package ID", TableUtilities.getTableName(Application.class) + "." + Application.PACKAGE_ID, TableUtilities.getTableName(Application.class) + "." + Application.PACKAGE_ID));
+        columns.add(createColumn("Sender/Project ID ", TableUtilities.getTableName(Application.class) + "." + Application.SENDER_ID, TableUtilities.getTableName(Application.class) + "." + Application.SENDER_ID));
 
-        DataTable<Application, String> dataTable = new DefaultDataTable<Application, String>("table", columns, dataProvider, 20);
+        DataTable<Map<String, Object>, String> dataTable = new DefaultDataTable<Map<String, Object>, String>("table", columns, dataProvider, 20);
         dataTable.addTopToolbar(new FilterToolbar(dataTable, filterForm, dataProvider));
 
         //
         filterForm.add(dataTable);
     }
 
-    private TextFilteredPropertyColumn<Application, Application, String> createColumn(String key, String sortProperty, String propertyExpression) {
-        return new TextFilteredPropertyColumn<Application, Application, String>(Model.<String> of(key), sortProperty, propertyExpression);
+    private TextFilteredPropertyColumn<Map<String, Object>, Map<String, Object>, String> createColumn(String key, String sortProperty, String propertyExpression) {
+        return new TextFilteredPropertyColumn<Map<String, Object>, Map<String, Object>, String>(Model.<String> of(key), sortProperty, propertyExpression);
     }
 
-    private FilteredAbstractColumn<Application, String> createActionsColumn() {
-        return new FilteredAbstractColumn<Application, String>(new Model<String>("Actions")) {
+    private FilteredAbstractColumn<Map<String, Object>, String> createActionsColumn() {
+        return new FilteredAbstractColumn<Map<String, Object>, String>(new Model<String>("Actions")) {
             private static final long serialVersionUID = 1L;
 
             // return the go-and-clear filter for the filter toolbar
@@ -102,7 +102,7 @@ public class ApplicationManagementPage extends WebPage {
             }
 
             // add the UserActionsPanel to the cell item
-            public void populateItem(Item<ICellPopulator<Application>> cellItem, String componentId, IModel<Application> rowModel) {
+            public void populateItem(Item<ICellPopulator<Map<String, Object>>> cellItem, String componentId, IModel<Map<String, Object>> rowModel) {
                 cellItem.add(new ApplicationActionPanel(componentId, rowModel));
             }
         };

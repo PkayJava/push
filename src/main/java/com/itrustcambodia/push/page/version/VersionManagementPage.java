@@ -2,11 +2,11 @@ package com.itrustcambodia.push.page.version;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.wicket.Component;
 import org.apache.wicket.extensions.markup.html.repeater.data.grid.ICellPopulator;
 import org.apache.wicket.extensions.markup.html.repeater.data.table.IColumn;
-import org.apache.wicket.extensions.markup.html.repeater.data.table.PropertyColumn;
 import org.apache.wicket.extensions.markup.html.repeater.data.table.filter.FilterForm;
 import org.apache.wicket.extensions.markup.html.repeater.data.table.filter.FilteredAbstractColumn;
 import org.apache.wicket.markup.html.basic.Label;
@@ -20,18 +20,20 @@ import com.itrustcambodia.pluggable.core.WebSession;
 import com.itrustcambodia.pluggable.layout.AbstractLayout;
 import com.itrustcambodia.pluggable.page.WebPage;
 import com.itrustcambodia.pluggable.utilities.FrameworkUtilities;
+import com.itrustcambodia.pluggable.utilities.TableUtilities;
 import com.itrustcambodia.pluggable.wicket.authroles.Role;
 import com.itrustcambodia.pluggable.wicket.authroles.authorization.strategies.role.Roles;
 import com.itrustcambodia.pluggable.wicket.authroles.authorization.strategies.role.annotations.AuthorizeInstantiation;
 import com.itrustcambodia.pluggable.wicket.extensions.markup.html.repeater.data.table.DataTable;
 import com.itrustcambodia.pluggable.wicket.extensions.markup.html.repeater.data.table.DefaultDataTable;
+import com.itrustcambodia.pluggable.wicket.extensions.markup.html.repeater.data.table.PropertyColumn;
 import com.itrustcambodia.pluggable.wicket.extensions.markup.html.repeater.data.table.filter.FilterToolbar;
 import com.itrustcambodia.pluggable.wicket.extensions.markup.html.repeater.data.table.filter.GoAndClearFilter;
 import com.itrustcambodia.pluggable.wicket.extensions.markup.html.repeater.data.table.filter.TextFilteredPropertyColumn;
+import com.itrustcambodia.pluggable.wicket.extensions.markup.html.repeater.util.MapSortableDataProvider;
 import com.itrustcambodia.push.MenuUtils;
 import com.itrustcambodia.push.action.VersionActionPanel;
 import com.itrustcambodia.push.entity.Version;
-import com.itrustcambodia.push.provider.VersionSortableDataProvider;
 
 @Mount("/versions")
 @AuthorizeInstantiation(roles = { @Role(name = "ROLE_PAGE_VERSION_MANAGEMENT", description = "Access Version Management Page") })
@@ -42,9 +44,9 @@ public class VersionManagementPage extends WebPage {
      */
     private static final long serialVersionUID = -4201966046136244462L;
 
-    private VersionSortableDataProvider dataProvider;
+    private MapSortableDataProvider dataProvider;
 
-    private FilterForm<Version> filterForm;
+    private FilterForm<Map<String, Object>> filterForm;
 
     @Override
     public String getPageTitle() {
@@ -67,35 +69,52 @@ public class VersionManagementPage extends WebPage {
 
         newPage.setVisible(FrameworkUtilities.hasAccess(roles, NewVersionPage.class));
 
-        this.dataProvider = new VersionSortableDataProvider();
+        this.dataProvider = new MapSortableDataProvider(TableUtilities.getTableName(Version.class));
 
-        this.filterForm = new FilterForm<Version>("filter-form", this.dataProvider);
+        this.filterForm = new FilterForm<Map<String, Object>>("filter-form", this.dataProvider);
         layout.add(filterForm);
 
-        List<IColumn<Version, String>> columns = new ArrayList<IColumn<Version, String>>();
+        List<IColumn<Map<String, Object>, String>> columns = new ArrayList<IColumn<Map<String, Object>, String>>();
         if (FrameworkUtilities.hasAccess(roles, EditVersionPage.class)) {
             columns.add(createActionsColumn());
-            columns.add(new PropertyColumn<Version, String>(org.apache.wicket.model.Model.<String> of("ID"), Version.ID, "id"));
+            columns.add(new PropertyColumn<Map<String, Object>, String>(org.apache.wicket.model.Model.<String> of("ID"), TableUtilities.getTableName(Version.class) + "." + Version.ID, TableUtilities.getTableName(Version.class) + "." + Version.ID));
         } else {
             columns.add(createFilterColumn());
         }
 
-        columns.add(createColumn("Name", Version.NAME, "name"));
-        columns.add(new PropertyColumn<Version, String>(org.apache.wicket.model.Model.<String> of("Description"), "description"));
+        columns.add(createColumn("Name", TableUtilities.getTableName(Version.class) + "." + Version.NAME, TableUtilities.getTableName(Version.class) + "." + Version.NAME));
+        columns.add(new PropertyColumn<Map<String, Object>, String>(org.apache.wicket.model.Model.<String> of("Description"), TableUtilities.getTableName(Version.class) + "." + Version.NAME) {
 
-        DataTable<Version, String> dataTable = new DefaultDataTable<Version, String>("table", columns, dataProvider, 20);
+            /**
+             * 
+             */
+            private static final long serialVersionUID = -3542081206965526923L;
+
+            @Override
+            public void populateItem(Item<ICellPopulator<Map<String, Object>>> item, String componentId, IModel<Map<String, Object>> rowModel) {
+                String name = (String) rowModel.getObject().get(getPropertyExpression());
+                if (Version.VERSION.get(name) != null && !"".equals(Version.VERSION.get(name))) {
+                    item.add(new Label(componentId, Version.VERSION.get(name)));
+                } else {
+                    item.add(new Label(componentId, name));
+                }
+            }
+
+        });
+
+        DataTable<Map<String, Object>, String> dataTable = new DefaultDataTable<Map<String, Object>, String>("table", columns, dataProvider, 20);
         dataTable.addTopToolbar(new FilterToolbar(dataTable, filterForm, dataProvider));
 
         //
         filterForm.add(dataTable);
     }
 
-    private TextFilteredPropertyColumn<Version, Version, String> createColumn(String key, String sortProperty, String propertyExpression) {
-        return new TextFilteredPropertyColumn<Version, Version, String>(org.apache.wicket.model.Model.<String> of(key), sortProperty, propertyExpression);
+    private TextFilteredPropertyColumn<Map<String, Object>, Map<String, Object>, String> createColumn(String key, String sortProperty, String propertyExpression) {
+        return new TextFilteredPropertyColumn<Map<String, Object>, Map<String, Object>, String>(org.apache.wicket.model.Model.<String> of(key), sortProperty, propertyExpression);
     }
 
-    private FilteredAbstractColumn<Version, String> createActionsColumn() {
-        return new FilteredAbstractColumn<Version, String>(new org.apache.wicket.model.Model<String>("Action / Filter")) {
+    private FilteredAbstractColumn<Map<String, Object>, String> createActionsColumn() {
+        return new FilteredAbstractColumn<Map<String, Object>, String>(new org.apache.wicket.model.Model<String>("Action / Filter")) {
             private static final long serialVersionUID = 1L;
 
             // return the go-and-clear filter for the filter toolbar
@@ -104,14 +123,14 @@ public class VersionManagementPage extends WebPage {
             }
 
             // add the UserActionsPanel to the cell item
-            public void populateItem(Item<ICellPopulator<Version>> cellItem, String componentId, IModel<Version> rowModel) {
+            public void populateItem(Item<ICellPopulator<Map<String, Object>>> cellItem, String componentId, IModel<Map<String, Object>> rowModel) {
                 cellItem.add(new VersionActionPanel(componentId, rowModel));
             }
         };
     }
 
-    private FilteredAbstractColumn<Version, String> createFilterColumn() {
-        return new FilteredAbstractColumn<Version, String>(new org.apache.wicket.model.Model<String>("ID / Filter")) {
+    private FilteredAbstractColumn<Map<String, Object>, String> createFilterColumn() {
+        return new FilteredAbstractColumn<Map<String, Object>, String>(new org.apache.wicket.model.Model<String>("ID / Filter")) {
             private static final long serialVersionUID = 1L;
 
             // return the go-and-clear filter for the filter toolbar
@@ -120,8 +139,8 @@ public class VersionManagementPage extends WebPage {
             }
 
             // add the UserActionsPanel to the cell item
-            public void populateItem(Item<ICellPopulator<Version>> cellItem, String componentId, IModel<Version> rowModel) {
-                cellItem.add(new Label(componentId, rowModel.getObject().getId()));
+            public void populateItem(Item<ICellPopulator<Map<String, Object>>> cellItem, String componentId, IModel<Map<String, Object>> rowModel) {
+                cellItem.add(new Label(componentId, (Number) rowModel.getObject().get(TableUtilities.getTableName(Version.class) + "." + Version.ID)));
             }
         };
     }

@@ -1,62 +1,50 @@
 package com.itrustcambodia.push.action;
 
+import java.util.Map;
+
 import org.apache.wicket.AttributeModifier;
-import org.apache.wicket.markup.html.link.Link;
-import org.apache.wicket.markup.html.panel.Panel;
 import org.apache.wicket.model.IModel;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 import com.itrustcambodia.pluggable.core.AbstractWebApplication;
+import com.itrustcambodia.pluggable.database.EntityRowMapper;
+import com.itrustcambodia.pluggable.panel.KnownPanel;
 import com.itrustcambodia.pluggable.utilities.TableUtilities;
+import com.itrustcambodia.pluggable.validation.controller.Navigation;
+import com.itrustcambodia.pluggable.widget.Link;
 import com.itrustcambodia.push.entity.Manufacture;
 import com.itrustcambodia.push.page.manufacture.EditManufacturePage;
 import com.itrustcambodia.push.page.manufacture.ManufactureManagementPage;
 
-public class ManufactureActionPanel extends Panel {
-    private static final long serialVersionUID = 1L;
+public class ManufactureActionPanel extends KnownPanel {
 
-    public ManufactureActionPanel(String id, IModel<Manufacture> model) {
+    /**
+     * 
+     */
+    private static final long serialVersionUID = -7100191469082094146L;
+
+    private Map<String, Object> model;
+
+    public ManufactureActionPanel(String id, IModel<Map<String, Object>> model) {
         super(id);
-        addEditLink(model);
-        addDeleteLink(model);
-
+        this.model = model.getObject();
+        getLinkComponent("delete").add(AttributeModifier.replace("onclick", "return confirm('Are you sure ?');"));
     }
 
-    private void addDeleteLink(IModel<Manufacture> model) {
-
-        Link<Manufacture> delete = new Link<Manufacture>("deleteLink", model) {
-            private static final long serialVersionUID = 1L;
-
-            /**
-             * Go to the Delete page, passing this page and the id of the
-             * Contact involved.
-             */
-            @Override
-            public void onClick() {
-                JdbcTemplate jdbcTemplate = ((AbstractWebApplication) getApplication()).getJdbcTemplate();
-                Manufacture model = getModelObject();
-                jdbcTemplate.update("delete from " + TableUtilities.getTableName(Manufacture.class) + " where " + Manufacture.ID + " = ?", model.getId());
-                setResponsePage(ManufactureManagementPage.class);
-            }
-        };
-        delete.add(AttributeModifier.replace("onclick", "return confirm('Are you sure ?');"));
-
-        add(delete);
+    @Link(label = "Delete", order = 1)
+    public Navigation delete() {
+        JdbcTemplate jdbcTemplate = ((AbstractWebApplication) getApplication()).getJdbcTemplate();
+        jdbcTemplate.update("delete from " + TableUtilities.getTableName(Manufacture.class) + " where " + Manufacture.ID + " = ?", model.get(TableUtilities.getTableName(Manufacture.class) + "." + Manufacture.ID));
+        return new Navigation(ManufactureManagementPage.class);
     }
 
-    private void addEditLink(IModel<Manufacture> model) {
-        add(new Link<Manufacture>("editLink", model) {
-            private static final long serialVersionUID = 1L;
-
-            /**
-             * Go to the Edit page, passing this page and the id of the Contact
-             * involved.
-             */
-            @Override
-            public void onClick() {
-                setResponsePage(new EditManufacturePage(getModelObject()));
-            }
-        });
+    @Link(label = "Edit", order = 2)
+    public Navigation edit() {
+        AbstractWebApplication application = (AbstractWebApplication) getApplication();
+        JdbcTemplate jdbcTemplate = application.getJdbcTemplate();
+        Long manufactureId = ((Number) model.get(TableUtilities.getTableName(Manufacture.class) + "." + Manufacture.ID)).longValue();
+        Manufacture manufacture = jdbcTemplate.queryForObject("select * from " + TableUtilities.getTableName(Manufacture.class) + " where " + Manufacture.ID + " = ?", new EntityRowMapper<Manufacture>(Manufacture.class), manufactureId);
+        return new Navigation(new EditManufacturePage(manufacture));
     }
 
 }

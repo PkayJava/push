@@ -2,11 +2,11 @@ package com.itrustcambodia.push.page.city;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.wicket.Component;
 import org.apache.wicket.extensions.markup.html.repeater.data.grid.ICellPopulator;
 import org.apache.wicket.extensions.markup.html.repeater.data.table.IColumn;
-import org.apache.wicket.extensions.markup.html.repeater.data.table.PropertyColumn;
 import org.apache.wicket.extensions.markup.html.repeater.data.table.filter.FilterForm;
 import org.apache.wicket.extensions.markup.html.repeater.data.table.filter.FilteredAbstractColumn;
 import org.apache.wicket.markup.html.basic.Label;
@@ -21,18 +21,20 @@ import com.itrustcambodia.pluggable.core.WebSession;
 import com.itrustcambodia.pluggable.layout.AbstractLayout;
 import com.itrustcambodia.pluggable.page.WebPage;
 import com.itrustcambodia.pluggable.utilities.FrameworkUtilities;
+import com.itrustcambodia.pluggable.utilities.TableUtilities;
 import com.itrustcambodia.pluggable.wicket.authroles.Role;
 import com.itrustcambodia.pluggable.wicket.authroles.authorization.strategies.role.Roles;
 import com.itrustcambodia.pluggable.wicket.authroles.authorization.strategies.role.annotations.AuthorizeInstantiation;
 import com.itrustcambodia.pluggable.wicket.extensions.markup.html.repeater.data.table.DataTable;
 import com.itrustcambodia.pluggable.wicket.extensions.markup.html.repeater.data.table.DefaultDataTable;
+import com.itrustcambodia.pluggable.wicket.extensions.markup.html.repeater.data.table.PropertyColumn;
 import com.itrustcambodia.pluggable.wicket.extensions.markup.html.repeater.data.table.filter.FilterToolbar;
 import com.itrustcambodia.pluggable.wicket.extensions.markup.html.repeater.data.table.filter.GoAndClearFilter;
 import com.itrustcambodia.pluggable.wicket.extensions.markup.html.repeater.data.table.filter.TextFilteredPropertyColumn;
+import com.itrustcambodia.pluggable.wicket.extensions.markup.html.repeater.util.MapSortableDataProvider;
 import com.itrustcambodia.push.MenuUtils;
 import com.itrustcambodia.push.action.CityActionPanel;
 import com.itrustcambodia.push.entity.City;
-import com.itrustcambodia.push.provider.CitySortableDataProvider;
 
 @Mount("/cities")
 @AuthorizeInstantiation(roles = { @Role(name = "ROLE_PAGE_CITY_MANAGEMENT", description = "Access City Management Page") })
@@ -43,9 +45,9 @@ public class CityManagementPage extends WebPage {
      */
     private static final long serialVersionUID = -4201966046136244462L;
 
-    private CitySortableDataProvider dataProvider;
+    private MapSortableDataProvider dataProvider;
 
-    private FilterForm<City> filterForm;
+    private FilterForm<Map<String, Object>> filterForm;
 
     @Override
     public String getPageTitle() {
@@ -67,34 +69,34 @@ public class CityManagementPage extends WebPage {
         layout.add(newPage);
         newPage.setVisible(FrameworkUtilities.hasAccess(roles, NewCityPage.class));
 
-        this.dataProvider = new CitySortableDataProvider();
+        this.dataProvider = new MapSortableDataProvider(TableUtilities.getTableName(City.class));
 
-        this.filterForm = new FilterForm<City>("filter-form", this.dataProvider);
+        this.filterForm = new FilterForm<Map<String, Object>>("filter-form", this.dataProvider);
         layout.add(filterForm);
 
-        List<IColumn<City, String>> columns = new ArrayList<IColumn<City, String>>();
+        List<IColumn<Map<String, Object>, String>> columns = new ArrayList<IColumn<Map<String, Object>, String>>();
         if (FrameworkUtilities.hasAccess(roles, EditCityPage.class)) {
             columns.add(createActionsColumn());
-            columns.add(new PropertyColumn<City, String>(Model.<String> of("ID"), City.ID, "id"));
+            columns.add(new PropertyColumn<Map<String, Object>, String>(Model.<String> of("ID"), TableUtilities.getTableName(City.class) + "." + City.ID, TableUtilities.getTableName(City.class) + "." + City.ID));
         } else {
             columns.add(createFilterColumn());
         }
 
-        columns.add(createColumn("Name", City.NAME, "name"));
+        columns.add(createColumn("Name", TableUtilities.getTableName(City.class) + "." + City.NAME, TableUtilities.getTableName(City.class) + "." + City.NAME));
 
-        DataTable<City, String> dataTable = new DefaultDataTable<City, String>("table", columns, dataProvider, 20);
+        DataTable<Map<String, Object>, String> dataTable = new DefaultDataTable<Map<String, Object>, String>("table", columns, dataProvider, 20);
         dataTable.addTopToolbar(new FilterToolbar(dataTable, filterForm, dataProvider));
 
         //
         filterForm.add(dataTable);
     }
 
-    private TextFilteredPropertyColumn<City, City, String> createColumn(String key, String sortProperty, String propertyExpression) {
-        return new TextFilteredPropertyColumn<City, City, String>(Model.<String> of(key), sortProperty, propertyExpression);
+    private TextFilteredPropertyColumn<Map<String, Object>, Map<String, Object>, String> createColumn(String key, String sortProperty, String propertyExpression) {
+        return new TextFilteredPropertyColumn<Map<String, Object>, Map<String, Object>, String>(Model.<String> of(key), sortProperty, propertyExpression);
     }
 
-    private FilteredAbstractColumn<City, String> createFilterColumn() {
-        return new FilteredAbstractColumn<City, String>(new org.apache.wicket.model.Model<String>("ID / Filter")) {
+    private FilteredAbstractColumn<Map<String, Object>, String> createFilterColumn() {
+        return new FilteredAbstractColumn<Map<String, Object>, String>(new org.apache.wicket.model.Model<String>("ID / Filter")) {
             private static final long serialVersionUID = 1L;
 
             // return the go-and-clear filter for the filter toolbar
@@ -103,14 +105,14 @@ public class CityManagementPage extends WebPage {
             }
 
             // add the UserActionsPanel to the cell item
-            public void populateItem(Item<ICellPopulator<City>> cellItem, String componentId, IModel<City> rowModel) {
-                cellItem.add(new Label(componentId, rowModel.getObject().getId()));
+            public void populateItem(Item<ICellPopulator<Map<String, Object>>> cellItem, String componentId, IModel<Map<String, Object>> rowModel) {
+                cellItem.add(new Label(componentId, (Number) rowModel.getObject().get(TableUtilities.getTableName(City.class) + "." + City.ID)));
             }
         };
     }
 
-    private FilteredAbstractColumn<City, String> createActionsColumn() {
-        return new FilteredAbstractColumn<City, String>(new Model<String>("Action / Filter")) {
+    private FilteredAbstractColumn<Map<String, Object>, String> createActionsColumn() {
+        return new FilteredAbstractColumn<Map<String, Object>, String>(new Model<String>("Action / Filter")) {
             private static final long serialVersionUID = 1L;
 
             // return the go-and-clear filter for the filter toolbar
@@ -119,7 +121,7 @@ public class CityManagementPage extends WebPage {
             }
 
             // add the UserActionsPanel to the cell item
-            public void populateItem(Item<ICellPopulator<City>> cellItem, String componentId, IModel<City> rowModel) {
+            public void populateItem(Item<ICellPopulator<Map<String, Object>>> cellItem, String componentId, IModel<Map<String, Object>> rowModel) {
                 cellItem.add(new CityActionPanel(componentId, rowModel));
             }
         };
