@@ -45,7 +45,7 @@ import com.itrustcambodia.push.entity.QueueDevice;
 import com.itrustcambodia.push.entity.Version;
 
 @DisallowConcurrentExecution
-@Scheduled(cron = "0/2 * * * * ?")
+@Scheduled(cron = "0/2 * * * * ?", description = "Push Job")
 public class Push extends Job {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(Push.class);

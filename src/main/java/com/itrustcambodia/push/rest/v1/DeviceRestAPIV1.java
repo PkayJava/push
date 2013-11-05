@@ -146,7 +146,7 @@ public class DeviceRestAPIV1 {
         Country country = getCountry(jdbcTemplate, request.getSession().getServletContext(), clientIP);
 
         Device device = insert(application, token, clientIP, platform, model, manufacture, app, version, country, city);
-
+        response.setContentType("application/json");
         Gson gson = application.getGson();
         gson.toJson(device.getId(), response.getWriter());
 
