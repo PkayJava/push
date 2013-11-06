@@ -32,6 +32,9 @@ public class ScheduleRestAPI {
 
     private static final String WHEN_FORMAT = "yyyy-MM-dd HH:mm:ss ZZ";
 
+    // private static final Logger LOGGER =
+    // LoggerFactory.getLogger(ScheduleRestAPI.class);
+
     @ApiMethod(description = "schedule a push, applications, countries, cities, platforms, manufactures, models, versions, you have to specific at least a param", requestParameters = { @ApiParam(name = "applications", type = Long[].class, description = "application id"), @ApiParam(name = "countries", type = Long[].class, description = "country id"), @ApiParam(name = "cities", type = Long[].class, description = "city id"), @ApiParam(name = "platforms", type = Long[].class, description = "platform id"), @ApiParam(name = "manufactures", type = Long[].class, description = "manufacture id"), @ApiParam(name = "models", type = Long[].class, description = "model id"), @ApiParam(name = "versions", type = Long[].class, description = "version id"),
             @ApiParam(name = "message", type = String.class, description = "message", required = true), @ApiParam(name = "when", type = String.class, description = "when, null mean now", format = WHEN_FORMAT) }, responseObject = Void.class, responseDescription = "response content is empty")
     @Secured(roles = { @Role(name = "ROLE_REST_SCHEDULE", description = "Access Schedule Rest") })
@@ -67,6 +70,7 @@ public class ScheduleRestAPI {
                 return Result.badRequest("application/json");
             }
         }
+        // LOGGER.info("date {}", schedule);
 
         if ((applications == null || applications.length == 0) && (countries == null || countries.length == 0) && (cities == null || cities.length == 0) && (platforms == null || platforms.length == 0) && (manufactures == null || manufactures.length == 0) && (models == null || models.length == 0) && (versions == null || versions.length == 0)) {
             return Result.badRequest("application/json");
@@ -88,6 +92,7 @@ public class ScheduleRestAPI {
                 listApplication.add(app);
             }
         }
+        // LOGGER.info("apps {}", applications);
 
         List<Long> listCountry = null;
         if (countries != null && countries.length > 0) {
@@ -95,6 +100,7 @@ public class ScheduleRestAPI {
             for (Long country : countries) {
                 listCountry.add(country);
             }
+            // LOGGER.info("countries {}", countries);
         }
 
         List<Long> listCity = null;
@@ -103,6 +109,7 @@ public class ScheduleRestAPI {
             for (Long city : cities) {
                 listCity.add(city);
             }
+            // LOGGER.info("cities {}", cities);
         }
 
         List<Long> listPlatform = null;
@@ -111,6 +118,7 @@ public class ScheduleRestAPI {
             for (Long platform : platforms) {
                 listPlatform.add(platform);
             }
+            // LOGGER.info("platforms {}", platforms);
         }
 
         List<Long> listManufacture = null;
@@ -119,6 +127,7 @@ public class ScheduleRestAPI {
             for (Long manufacture : manufactures) {
                 listManufacture.add(manufacture);
             }
+            // LOGGER.info("manufactures {}", manufactures);
         }
 
         List<Long> listModel = null;
@@ -127,6 +136,7 @@ public class ScheduleRestAPI {
             for (Long model : models) {
                 listModel.add(model);
             }
+            // LOGGER.info("models {}", models);
         }
 
         List<Long> listVersion = null;
@@ -135,9 +145,12 @@ public class ScheduleRestAPI {
             for (Long version : versions) {
                 listVersion.add(version);
             }
+            // LOGGER.info("versions {}", versions);
         }
 
         PushUtils.schedule(jdbcTemplate, user.getId(), listCountry, listCity, listApplication, listPlatform, listManufacture, listModel, listVersion, message, schedule);
+
+        // LOGGER.info("ok {}", "ok");
 
         return Result.ok("application/json");
     }

@@ -248,7 +248,13 @@ public class DeviceRestAPIV1 {
     private Country getCountry(JdbcTemplate jdbcTemplate, ServletContext context, String ip) {
         try {
             DatabaseReader reader = new DatabaseReader(new File(context.getRealPath("/WEB-INF/GeoLite2-City.mmdb")));
-            Country country = getCountry(jdbcTemplate, reader.city(InetAddress.getByName(ip)).getCountry().getName());
+            String name = reader.city(InetAddress.getByName(ip)).getCountry().getName();
+            Country country = null;
+            if (name == null || "".equals(name)) {
+                country = getCountry(jdbcTemplate, "N/A");
+            } else {
+                country = getCountry(jdbcTemplate, reader.city(InetAddress.getByName(ip)).getCountry().getName());
+            }
             reader.close();
             return country;
         } catch (IOException e) {
@@ -280,7 +286,13 @@ public class DeviceRestAPIV1 {
     private City getCity(JdbcTemplate jdbcTemplate, ServletContext context, String ip) {
         try {
             DatabaseReader reader = new DatabaseReader(new File(context.getRealPath("/WEB-INF/GeoLite2-City.mmdb")));
-            City city = getCity(jdbcTemplate, reader.city(InetAddress.getByName(ip)).getCity().getName());
+            String name = reader.city(InetAddress.getByName(ip)).getCity().getName();
+            City city = null;
+            if (name == null || "".equals(name)) {
+                city = getCity(jdbcTemplate, "N/A");
+            } else {
+                city = getCity(jdbcTemplate, reader.city(InetAddress.getByName(ip)).getCity().getName());
+            }
             reader.close();
             return city;
         } catch (IOException e) {
