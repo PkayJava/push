@@ -21,7 +21,7 @@ public final class PushUtils {
     private PushUtils() {
     }
 
-    public static final long schedule(JdbcTemplate jdbcTemplate, Long userId, List<Long> countries, List<Long> cities, List<Long> applications, List<Long> platforms, List<Long> manufactures, List<Long> models, List<Long> versions, String message, Date when) {
+    public static final void schedule(JdbcTemplate jdbcTemplate, Long userId, List<Long> countries, List<Long> cities, List<Long> applications, List<Long> platforms, List<Long> manufactures, List<Long> models, List<Long> versions, String message, Date when) {
         StringBuffer select = new StringBuffer();
         select.append("select device.* from " + TableUtilities.getTableName(Device.class) + " device inner join " + TableUtilities.getTableName(Application.class) + " application on device." + Device.APPLICATION_ID + " = application." + com.itrustcambodia.push.entity.Application.ID);
 
@@ -63,31 +63,67 @@ public final class PushUtils {
         if (!wheres.isEmpty()) {
             select.append(" where " + org.apache.commons.lang3.StringUtils.join(wheres, " and "));
         }
-        long queueId = 0;
-        NamedParameterJdbcTemplate query = new NamedParameterJdbcTemplate(jdbcTemplate);
-        List<Device> devices = query.query(select.toString(), params, new EntityRowMapper<Device>(Device.class));
-        if (devices != null && !devices.isEmpty()) {
-            SimpleJdbcInsert queueInsert = new SimpleJdbcInsert(jdbcTemplate);
-            queueInsert.withTableName(TableUtilities.getTableName(Queue.class));
-            queueInsert.usingGeneratedKeyColumns(Queue.ID);
 
-            Map<String, Object> fields = new HashMap<String, Object>();
-
-            fields.put(Queue.MESSAGE, message);
-            fields.put(Queue.USER_ID, userId);
-            fields.put(Queue.QUEUE_DATE, when == null ? new Date() : when);
-            queueId = queueInsert.executeAndReturnKey(fields).longValue();
-
-            SimpleJdbcInsert deviceQueue = new SimpleJdbcInsert(jdbcTemplate);
-            deviceQueue.setTableName(TableUtilities.getTableName(QueueDevice.class));
-            for (Device device : devices) {
-                FeedbackUtils.feedback(jdbcTemplate, device.getApplicationId());
-                Map<String, Object> f = new HashMap<String, Object>();
-                f.put(QueueDevice.DEVICE_ID, device.getId());
-                f.put(QueueDevice.QUEUE_ID, queueId);
-                deviceQueue.execute(f);
-            }
-        }
-        return queueId;
+        DeviceRunner deviceRunner = new DeviceRunner(select, message, userId, jdbcTemplate, params, when);
+        Thread thread = new Thread(deviceRunner);
+        thread.start();
+        
     }
+
+    private static class DeviceRunner implements Runnable {
+
+        private StringBuffer select;
+
+        private String message;
+
+        private Long userId;
+
+        private JdbcTemplate jdbcTemplate;
+
+        private Map<String, Object> params;
+
+        private Date when;
+
+        public DeviceRunner(StringBuffer select, String message, Long userId, JdbcTemplate jdbcTemplate, Map<String, Object> params, Date when) {
+            super();
+            this.select = select;
+            this.message = message;
+            this.userId = userId;
+            this.jdbcTemplate = jdbcTemplate;
+            this.params = params;
+            this.when = when;
+        }
+
+        @Override
+        public void run() {
+            long queueId = 0;
+            NamedParameterJdbcTemplate query = new NamedParameterJdbcTemplate(jdbcTemplate);
+            List<Device> devices = query.query(select.toString(), params, new EntityRowMapper<Device>(Device.class));
+            if (devices != null && !devices.isEmpty()) {
+                SimpleJdbcInsert queueInsert = new SimpleJdbcInsert(jdbcTemplate);
+                queueInsert.withTableName(TableUtilities.getTableName(Queue.class));
+                queueInsert.usingGeneratedKeyColumns(Queue.ID);
+
+                Map<String, Object> fields = new HashMap<String, Object>();
+
+                fields.put(Queue.MESSAGE, message);
+                fields.put(Queue.USER_ID, userId);
+                fields.put(Queue.QUEUE_DATE, when == null ? new Date() : when);
+                queueId = queueInsert.executeAndReturnKey(fields).longValue();
+
+                SimpleJdbcInsert deviceQueue = new SimpleJdbcInsert(jdbcTemplate);
+                deviceQueue.setTableName(TableUtilities.getTableName(QueueDevice.class));
+                for (Device device : devices) {
+                    FeedbackUtils.feedback(jdbcTemplate, device.getApplicationId());
+                    Map<String, Object> f = new HashMap<String, Object>();
+                    f.put(QueueDevice.DEVICE_ID, device.getId());
+                    f.put(QueueDevice.QUEUE_ID, queueId);
+                    deviceQueue.execute(f);
+                }
+            }
+            // return queueId;
+        }
+
+    }
+
 }

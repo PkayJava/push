@@ -14,6 +14,7 @@ import com.itrustcambodia.push.page.device.NewDevicePage;
 import com.itrustcambodia.push.page.manufacture.ManufactureManagementPage;
 import com.itrustcambodia.push.page.model.ModelManagementPage;
 import com.itrustcambodia.push.page.platform.PlatformManagementPage;
+import com.itrustcambodia.push.page.queue.QueueManagementPage;
 import com.itrustcambodia.push.page.version.VersionManagementPage;
 
 public class MenuUtils {
@@ -25,7 +26,7 @@ public class MenuUtils {
         references.add(Menu.linkMenu("Platform", PlatformManagementPage.class));
         references.add(Menu.linkMenu("Country", CountryManagementPage.class));
         references.add(Menu.linkMenu("City", CityManagementPage.class));
-
+        references.add(Menu.linkMenu("Queue", QueueManagementPage.class));
         return references;
     }
 

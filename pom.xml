@@ -15,7 +15,10 @@
 	<modelVersion>4.0.0</modelVersion>
 
 	<groupId>com.itrustcambodia.push</groupId>
-	<artifactId>push</artifactId>
+	<artifactId>push</artifactId> 
+	<!-- 
+	<artifactId>v5</artifactId>
+	-->
 	<version>0.0.1.1-SNAPSHOT</version>
 	<packaging>war</packaging>
 
@@ -32,7 +35,7 @@
 	</licenses>
 
 	<properties>
-		<wicket.version>6.11.0</wicket.version>
+		<wicket.version>6.12.0</wicket.version>
 		<spring.web.version>3.2.3.RELEASE</spring.web.version>
 		<java.version>1.6</java.version>
 		<slf4j.version>1.7.5</slf4j.version>
@@ -42,7 +45,7 @@
 		<ienv.name>${user.name}</ienv.name>
 
 		<tomcat7.maven.plugin.version>2.1</tomcat7.maven.plugin.version>
-		<cf.maven.plugin.version>1.0.0</cf.maven.plugin.version>
+		<cf.maven.plugin.version>1.0.0.M4</cf.maven.plugin.version>
 		<maven.war.plugin.version>2.4</maven.war.plugin.version>
 		<maven.clean.plugin.version>2.5</maven.clean.plugin.version>
 		<maven.install.plugin.version>2.5</maven.install.plugin.version>
@@ -104,6 +107,25 @@
 			</properties>
 			<build>
 				<finalName>v5</finalName>
+				<plugins>
+					<plugin>
+						<groupId>org.cloudfoundry</groupId>
+						<artifactId>cf-maven-plugin</artifactId>
+						<version>${cf.maven.plugin.version}</version>
+						<configuration>
+							<server>v5-appfog</server>
+							<target>https://api.appfog.com</target>
+							<url>v5.eu01.aws.af.cm</url>
+							<memory>2048</memory>
+							<services>
+								<service>
+									<name>v5_mysql</name>
+									<vendor>mysql</vendor>
+								</service>
+							</services>
+						</configuration>
+					</plugin>
+				</plugins>
 			</build>
 		</profile>
 	</profiles>
@@ -456,24 +478,6 @@
 							</content>
 						</file>
 					</additionalConfig>
-				</configuration>
-			</plugin>
-
-			<plugin>
-				<groupId>org.cloudfoundry</groupId>
-				<artifactId>cf-maven-plugin</artifactId>
-				<version>${cf.maven.plugin.version}</version>
-				<configuration>
-					<server>v5-appfog</server>
-					<target>https://api.appfog.com</target>
-					<url>v5.eu01.aws.af.cm</url>
-					<memory>2048</memory>
-					<services>
-						<service>
-							<name>v5_mysql</name>
-							<vendor>mysql</vendor>
-						</service>
-					</services>
 				</configuration>
 			</plugin>
 

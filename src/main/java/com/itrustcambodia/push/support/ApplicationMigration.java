@@ -31,7 +31,11 @@ import com.itrustcambodia.push.entity.Queue;
 import com.itrustcambodia.push.entity.QueueDevice;
 
 public class ApplicationMigration extends AbstractApplicationMigrator {
-	
+
+    @Version(value = 0.06, description = "")
+    public void patchVersion_0_06() {
+    }
+
     @Version(value = 0.03, description = "Install Group")
     public void patchVersion_0_03() {
         JdbcTemplate jdbcTemplate = getApplication().getBean(JdbcTemplate.class);
