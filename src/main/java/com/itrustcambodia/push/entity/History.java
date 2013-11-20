@@ -23,7 +23,7 @@ public class History implements Serializable {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = ID, columnDefinition = "INT")
     private Long id;
-    public static final String ID = "hostory_id";
+    public static final String ID = "history_id";
 
     @Column(name = TOKEN, columnDefinition = "VARCHAR(255)")
     private String token;
