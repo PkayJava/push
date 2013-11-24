@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE properties SYSTEM "http://java.sun.com/dtd/properties.dtd">
+<properties>
+	<entry key="connection">local</entry>
+	<entry key="driverClass">com.mysql.jdbc.Driver</entry>
+	<entry key="jdbcUrl">jdbc:mysql://127.0.0.1/push?createDatabaseIfNotExist=true</entry>
+	<entry key="username">root</entry>
+	<entry key="password"></entry>
+</properties>

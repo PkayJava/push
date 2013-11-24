@@ -94,36 +94,36 @@ public class WebApplication extends AbstractWebApplication {
         return User.class;
     }
 
-//    @Override
-//    protected DataSource initDataSource() {
-//        CloudDataSourceFactory cloudDataSourceFactory = new CloudDataSourceFactory();
-//        cloudDataSourceFactory.setServiceName("v5_mysql");
-//        try {
-//            cloudDataSourceFactory.afterPropertiesSet();
-//            return cloudDataSourceFactory.getObject();
-//        } catch (Exception e) {
-//        }
-//        return null;
-//    }
-
-     @Override
-     protected DataSource initDataSource() {
-     BoneCPDataSource dataSource = new BoneCPDataSource();
-     dataSource.setDriverClass("com.mysql.jdbc.Driver");
-     dataSource.setJdbcUrl("jdbc:mysql://127.0.0.1/v5?createDatabaseIfNotExist=true");
-     dataSource.setUsername("root");
-     dataSource.setPassword("");
-     dataSource.setIdleConnectionTestPeriod(60, TimeUnit.SECONDS);
-     dataSource.setIdleMaxAgeInSeconds(240);
-     dataSource.setMaxConnectionsPerPartition(30);
-     dataSource.setMinConnectionsPerPartition(10);
-     dataSource.setPartitionCount(3);
-     dataSource.setAcquireIncrement(5);
-     dataSource.setStatementsCacheSize(100);
-     dataSource.setCloseConnectionWatch(true);
-     dataSource.setReleaseHelperThreads(3);
-     return dataSource;
-     }
+    @Override
+    protected DataSource initDataSource() {
+        org.apache.wicket.resource.Properties prop = this.getResourceSettings().getPropertiesFactory().load(WebApplication.class, "datasource");
+        if ("local".equals(prop.getString("connection"))) {
+            BoneCPDataSource dataSource = new BoneCPDataSource();
+            dataSource.setDriverClass(prop.getString("driverClass"));
+            dataSource.setJdbcUrl(prop.getString("jdbcUrl"));
+            dataSource.setUsername(prop.getString("username"));
+            dataSource.setPassword(prop.getString("password"));
+            dataSource.setIdleConnectionTestPeriod(60, TimeUnit.SECONDS);
+            dataSource.setIdleMaxAgeInSeconds(240);
+            dataSource.setMaxConnectionsPerPartition(30);
+            dataSource.setMinConnectionsPerPartition(10);
+            dataSource.setPartitionCount(3);
+            dataSource.setAcquireIncrement(5);
+            dataSource.setStatementsCacheSize(100);
+            dataSource.setCloseConnectionWatch(true);
+            dataSource.setReleaseHelperThreads(3);
+            return dataSource;
+        } else if ("appfog".equals(prop.getString("connection"))) {
+            CloudDataSourceFactory cloudDataSourceFactory = new CloudDataSourceFactory();
+            cloudDataSourceFactory.setServiceName(prop.getString("serviceName"));
+            try {
+                cloudDataSourceFactory.afterPropertiesSet();
+                return cloudDataSourceFactory.getObject();
+            } catch (Exception e) {
+            }
+        }
+        return null;
+    }
 
     @Override
     public String getRealm() {
