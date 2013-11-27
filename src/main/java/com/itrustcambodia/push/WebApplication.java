@@ -14,6 +14,12 @@ import com.itrustcambodia.pluggable.core.Menu;
 import com.itrustcambodia.pluggable.entity.AbstractUser;
 import com.itrustcambodia.pluggable.migration.AbstractApplicationMigrator;
 import com.itrustcambodia.pluggable.page.ApplicationSettingPage;
+import com.itrustcambodia.pluggable.page.EditGroupPage;
+import com.itrustcambodia.pluggable.page.EditUserPage;
+import com.itrustcambodia.pluggable.page.GroupManagementPage;
+import com.itrustcambodia.pluggable.page.NewGroupPage;
+import com.itrustcambodia.pluggable.page.NewUserPage;
+import com.itrustcambodia.pluggable.page.UserManagementPage;
 import com.itrustcambodia.pluggable.page.WebPage;
 import com.itrustcambodia.pluggable.wicket.authroles.authorization.strategies.role.Roles;
 import com.itrustcambodia.push.entity.User;
@@ -133,5 +139,35 @@ public class WebApplication extends AbstractWebApplication {
     @Override
     public String getSecretKey() {
         return "d9b790d3a010441aa001d73141134c8d";
+    }
+
+    @Override
+    public Class<? extends WebPage> getNewUserPage() {
+        return NewUserPage.class;
+    }
+
+    @Override
+    public Class<? extends WebPage> getEditUserPage() {
+        return EditUserPage.class;
+    }
+
+    @Override
+    public Class<? extends WebPage> getUserManagementPage() {
+        return UserManagementPage.class;
+    }
+
+    @Override
+    public Class<? extends WebPage> getNewGroupPage() {
+        return NewGroupPage.class;
+    }
+
+    @Override
+    public Class<? extends WebPage> getEditGroupPage() {
+        return EditGroupPage.class;
+    }
+
+    @Override
+    public Class<? extends WebPage> getGroupManagementPage() {
+        return GroupManagementPage.class;
     }
 }
