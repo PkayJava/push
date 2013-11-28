@@ -131,29 +131,35 @@ public final class PushUtils {
         @Override
         public void run() {
             long queueId = 0;
+            long limit = 100;
             NamedParameterJdbcTemplate query = new NamedParameterJdbcTemplate(jdbcTemplate);
-            List<Device> devices = query.query(select.toString(), params, new EntityRowMapper<Device>(Device.class));
-            if (devices != null && !devices.isEmpty()) {
-                SimpleJdbcInsert queueInsert = new SimpleJdbcInsert(jdbcTemplate);
-                queueInsert.withTableName(TableUtilities.getTableName(Queue.class));
-                queueInsert.usingGeneratedKeyColumns(Queue.ID);
+            Long count = query.queryForObject("select count(*) from (" + select.toString() + ") pp", params, Long.class);
+            long current = 0;
+            while (current <= count) {
+                List<Device> devices = query.query(select.toString() + " limit " + current + "," + limit, params, new EntityRowMapper<Device>(Device.class));
+                if (devices != null && !devices.isEmpty()) {
+                    SimpleJdbcInsert queueInsert = new SimpleJdbcInsert(jdbcTemplate);
+                    queueInsert.withTableName(TableUtilities.getTableName(Queue.class));
+                    queueInsert.usingGeneratedKeyColumns(Queue.ID);
 
-                Map<String, Object> fields = new HashMap<String, Object>();
+                    Map<String, Object> fields = new HashMap<String, Object>();
 
-                fields.put(Queue.MESSAGE, message);
-                fields.put(Queue.USER_ID, userId);
-                fields.put(Queue.QUEUE_DATE, when == null ? new Date() : when);
-                queueId = queueInsert.executeAndReturnKey(fields).longValue();
+                    fields.put(Queue.MESSAGE, message);
+                    fields.put(Queue.USER_ID, userId);
+                    fields.put(Queue.QUEUE_DATE, when == null ? new Date() : when);
+                    queueId = queueInsert.executeAndReturnKey(fields).longValue();
 
-                SimpleJdbcInsert deviceQueue = new SimpleJdbcInsert(jdbcTemplate);
-                deviceQueue.setTableName(TableUtilities.getTableName(QueueDevice.class));
-                for (Device device : devices) {
-                    FeedbackUtils.feedback(jdbcTemplate, device.getApplicationId());
-                    Map<String, Object> f = new HashMap<String, Object>();
-                    f.put(QueueDevice.DEVICE_ID, device.getId());
-                    f.put(QueueDevice.QUEUE_ID, queueId);
-                    deviceQueue.execute(f);
+                    SimpleJdbcInsert deviceQueue = new SimpleJdbcInsert(jdbcTemplate);
+                    deviceQueue.setTableName(TableUtilities.getTableName(QueueDevice.class));
+                    for (Device device : devices) {
+                        FeedbackUtils.feedback(jdbcTemplate, device.getApplicationId());
+                        Map<String, Object> f = new HashMap<String, Object>();
+                        f.put(QueueDevice.DEVICE_ID, device.getId());
+                        f.put(QueueDevice.QUEUE_ID, queueId);
+                        deviceQueue.execute(f);
+                    }
                 }
+                current = current + count;
             }
             // return queueId;
         }
